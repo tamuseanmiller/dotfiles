@@ -178,4 +178,5 @@ fzf-git-checkout() {
 }
 
 alias gco='fzf-git-checkout'
-
+alias gg='lazygit'
+alias sudo='sudo '

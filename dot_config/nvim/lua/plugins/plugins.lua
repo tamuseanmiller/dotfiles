@@ -30,6 +30,7 @@ return {
   --   },
   {
     "OXY2DEV/markview.nvim",
+    enabled = false,
     lazy = false, -- Recommended
     -- ft = "markdown" -- If you decide to lazy-load anyway
 
@@ -82,7 +83,7 @@ return {
       )
     end,
   },
-
+  --
   -- {
   --   "nvim-lualine/lualine.nvim",
   --   dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -115,4 +116,37 @@ return {
       })
     end,
   },
+  {
+    "lewis6991/gitsigns.nvim",
+    enabled = false,
+  },
+  {
+    "nvim-neo-tree/neo-tree.nvim",
+    -- enabled = false,
+    branch = "v3.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+      "MunifTanjim/nui.nvim",
+      -- "3rd/image.nvim", -- Optional image support in preview window: See `# Preview Mode` for more information
+    },
+  },
+
+  -- {
+  --   "nvim-tree/nvim-tree.lua",
+  --   config = function()
+  --     -- empty setup using defaults
+  --     require("nvim-tree").setup()
+  --   end,
+  -- },
+
+  -- {
+  --   "stevearc/oil.nvim",
+  --   ---@module 'oil'
+  --   ---@type oil.SetupOpts
+  --   opts = {},
+  --   -- Optional dependencies
+  --   dependencies = { { "echasnovski/mini.icons", opts = {} } },
+  --   -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if prefer nvim-web-devicons
+  -- },
 }

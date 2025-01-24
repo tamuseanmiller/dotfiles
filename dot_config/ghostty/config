@@ -1,6 +1,8 @@
+# config-file = themes/rosepine
+
 theme = rose-pine
-background = #000000
-background-opacity = 0.8
+#background = #000000
+background-opacity = 0.90
 background-blur-radius = 15
 
 font-family = JetBrainsMonoNL Nerd Font
@@ -8,6 +10,8 @@ font-family = JetBrainsMonoNL Nerd Font
 font-size = 12
 cursor-style = block
 cursor-style-blink = false
+cursor-invert-fg-bg = true
+
 shell-integration-features = no-cursor
 
 macos-titlebar-style = tabs
@@ -19,6 +23,9 @@ window-padding-x = 10
 window-padding-balance = true
 
 auto-update = check
+auto-update-channel = stable
+
+
 
 # Reload with shift-command-,
 
