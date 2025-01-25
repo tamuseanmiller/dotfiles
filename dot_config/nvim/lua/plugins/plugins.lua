@@ -83,43 +83,44 @@ return {
       )
     end,
   },
-  --
-  -- {
-  --   "nvim-lualine/lualine.nvim",
-  --   dependencies = { "nvim-tree/nvim-web-devicons" },
-  --   config = function()
-  --     -- Set lualine theme to catppuccin
-  --     require("lualine").setup({
-  --       options = {
-  --         theme = "catppuccin",
-  --       },
-  --     })
-  --   end,
-  -- },
 
   {
-    "catppuccin/nvim",
-    name = "catppuccin",
-  },
-
-  -- feline for the bottom bar
-  {
-    "freddiehaddad/feline.nvim",
-    opts = {},
-    config = function(_, opts)
-      local ctp_feline = require("catppuccin.groups.integrations.feline")
-
-      ctp_feline.setup()
-
-      require("feline").setup({
-        components = ctp_feline.get(),
+    "nvim-lualine/lualine.nvim",
+    enabled = false,
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      -- Set lualine theme to catppuccin
+      require("lualine").setup({
+        options = {
+          theme = "catppuccin",
+        },
       })
     end,
   },
-  {
-    "lewis6991/gitsigns.nvim",
-    enabled = false,
-  },
+  --
+  -- {
+  --   "catppuccin/nvim",
+  --   name = "catppuccin",
+  -- },
+  --
+  -- -- feline for the bottom bar
+  -- {
+  --   "freddiehaddad/feline.nvim",
+  --   opts = {},
+  --   config = function(_, opts)
+  --     local ctp_feline = require("catppuccin.groups.integrations.feline")
+  --
+  --     ctp_feline.setup()
+  --
+  --     require("feline").setup({
+  --       components = ctp_feline.get(),
+  --     })
+  --   end,
+  -- },
+  -- {
+  --   "lewis6991/gitsigns.nvim",
+  --   enabled = false,
+  -- },
   {
     "nvim-neo-tree/neo-tree.nvim",
     -- enabled = false,
