@@ -7,4 +7,4 @@ require("config.lazy")
 dofile(vim.g.base46_cache .. "defaults")
 dofile(vim.g.base46_cache .. "statusline")
 
-vim.cmd("colorscheme rose-pine")
+-- vim.cmd("colorscheme rose-pine")
