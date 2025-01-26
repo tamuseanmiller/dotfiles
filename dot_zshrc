@@ -109,11 +109,6 @@ eval "$(zoxide init zsh)"
 # eza (better ls)
 alias ls='eza --color=always --group-directories-first'
 
-# CMake Alias
-alias cmc='cmake --preset'
-alias cmb='cmake --build --preset'
-alias cmbt='cmake --build --preset macos-armv8-debug --target'
-
 # Starship (terminal behavior look?)
 eval "$(starship init zsh)"
 
@@ -180,3 +175,96 @@ fzf-git-checkout() {
 alias gco='fzf-git-checkout'
 alias gg='lazygit'
 alias sudo='sudo '
+
+cmake_fzf() {
+  # Set the root directory for your CMake project (update this to your project root)
+  local cmake_project_dir="$(pwd)"
+  
+  # Paths to the CMakeUserPresets.json and potential CMakePresets.json from includes
+  local cmake_user_presets="$cmake_project_dir/CMakeUserPresets.json"
+
+  # Initialize the list of presets
+  local configure_presets=""
+  local build_presets=""
+  local test_presets=""
+
+  # If CMakeUserPresets.json exists, process its include field
+  if [[ -f "$cmake_user_presets" ]]; then
+
+    # Parse the CMakeUserPresets.json file to get included preset files
+    local included_presets=()
+    while IFS= read -r line; do
+      included_presets+=("$line")
+    done < <(jq -r '.include[]' "$cmake_user_presets")
+
+    # For each included preset, try to load the presets
+    for preset_file in "${included_presets[@]}"; do
+
+      # Resolve the full path for the included preset file
+      local full_preset_path="$cmake_project_dir/$preset_file"
+
+      # Check if the included file exists
+      if [[ -f "$full_preset_path" ]]; then
+
+        # Append the presets from the included file
+        configure_presets+=$(jq -r '.configurePresets[]?.name' "$full_preset_path")
+        configure_presets+=$'\n'
+        build_presets+=$(jq -r '.buildPresets[]?.name' "$full_preset_path")
+        build_presets+=$'\n'
+        test_presets+=$(jq -r '.testPresets[]?.name' "$full_preset_path")
+        test_presets+=$'\n'
+      else
+        echo "Warning: Included preset file not found: $full_preset_path"
+      fi
+    done
+  fi
+
+  # If no presets found, show an error
+  if [[ -z "$configure_presets" && -z "$build_presets" && -z "$test_presets" ]]; then
+    echo "No presets found in CMakeUserPresets.json or included files."
+    return 1
+  fi
+
+  # Determine the action based on the first argument
+  local action="$1"
+  local selected_preset
+
+  case "$action" in
+    "Configure")
+      selected_preset=$(echo "$configure_presets" | fzf --prompt="Select a Configure Preset: ")
+      if [[ -z "$selected_preset" ]]; then
+        echo "No configure preset selected, aborting."
+        return 1
+      fi
+      echo "Running cmake configure with preset: $selected_preset"
+      cmake --preset "$selected_preset"
+      ;;
+    "Build")
+      selected_preset=$(echo "$build_presets" | fzf --prompt="Select a Build Preset: ")
+      if [[ -z "$selected_preset" ]]; then
+        echo "No build preset selected, aborting."
+        return 1
+      fi
+      echo "Running cmake build with preset: $selected_preset"
+      cmake --build . --preset "$selected_preset"
+      ;;
+    "Test")
+      selected_preset=$(echo "$test_presets" | fzf --prompt="Select a Test Preset: ")
+      if [[ -z "$selected_preset" ]]; then
+        echo "No test preset selected, aborting."
+        return 1
+      fi
+      echo "Running cmake test with preset: $selected_preset"
+      ctest --preset "$selected_preset"
+      ;;
+    *)
+      echo "Unknown action: $action. Use 'cmc' for configure, 'cmb' for build, or 'ct' for test."
+      return 1
+      ;;
+  esac
+}
+# Create aliases for the different actions
+alias cmc='cmake_fzf "Configure"'
+alias cmb='cmake_fzf "Build"'
+alias ct='cmake_fzf "Test"'
+
