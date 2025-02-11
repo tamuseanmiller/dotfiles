@@ -1,13 +1,13 @@
 local options = {
 
   base46 = {
-    theme = "rosepine", -- default theme
+    theme = "catppuccin", -- default theme
     hl_add = {},
     hl_override = {},
     integrations = {},
     changed_themes = {},
     transparency = true,
-    theme_toggle = { "rosepine", "catppuccin" },
+    theme_toggle = { "rosepine", "rosepine" },
   },
 
   ui = {
@@ -29,7 +29,7 @@ local options = {
       -- default/round/block/arrow separators work only for default statusline theme
       -- round and block will work for minimal theme only
       separator_style = "round",
-      order = nil,
+      order = { "mode", "file", "git", "%=", "lsp_msg", "%=", "diagnostics", "lsp", "cursor", "cwd" },
       modules = nil,
     },
 
