@@ -179,7 +179,7 @@ alias sudo='sudo '
 cmake_fzf() {
   # Set the root directory for your CMake project (update this to your project root)
   local cmake_project_dir="$(pwd)"
-  
+
   # Paths to the CMakeUserPresets.json and potential CMakePresets.json from includes
   local cmake_user_presets="$cmake_project_dir/CMakeUserPresets.json"
 
@@ -246,7 +246,7 @@ cmake_fzf() {
         return 1
       fi
       echo "Running cmake build with preset: $selected_preset"
-      cmake --build . --preset "$selected_preset"
+      cmake --build . --preset "$selected_preset" | xcbeautify
       ;;
     "Test")
       selected_preset=$(echo "$test_presets" | fzf --prompt="Select a Test Preset: ")
@@ -268,3 +268,151 @@ alias cmc='cmake_fzf "Configure"'
 alias cmb='cmake_fzf "Build"'
 alias ct='cmake_fzf "Test"'
 
+conan_fzf() {
+  # Check if we're in a directory with a conanfile.py
+  if [[ ! -f "conanfile.py" ]]; then
+    echo "Error: No conanfile.py found in current directory. Please run this from your project root."
+    return 1
+  fi
+
+  # Check if BUILDING.md exists
+  if [[ ! -f "BUILDING.md" ]]; then
+    echo "Error: BUILDING.md not found. Cannot extract project-specific conan profiles."
+    return 1
+  fi
+
+  # Parse profiles from BUILDING.md
+  local profiles
+  profiles=$(grep -o "conan install \. -pr [a-zA-Z0-9_-]*" BUILDING.md | sed 's/conan install \. -pr //' | sort -u)
+
+  if [[ -z "$profiles" ]]; then
+    echo "Error: No conan profiles found in BUILDING.md."
+    return 1
+  fi
+
+  # Determine filter based on the first argument
+  local filter="$1"
+  local filtered_profiles
+
+  case "$filter" in
+    "windows"|"win")
+      filtered_profiles=$(echo "$profiles" | grep -i "win")
+      echo "Showing Windows profiles..."
+      ;;
+    "macos"|"mac"|"darwin")
+      filtered_profiles=$(echo "$profiles" | grep -i "macos")
+      echo "Showing macOS profiles..."
+      ;;
+    "linux")
+      filtered_profiles=$(echo "$profiles" | grep -i "rhel\|linux")
+      echo "Showing Linux profiles..."
+      ;;
+    "android")
+      filtered_profiles=$(echo "$profiles" | grep -i "android")
+      echo "Showing Android profiles..."
+      ;;
+    "ios")
+      filtered_profiles=$(echo "$profiles" | grep -i "ios")
+      echo "Showing iOS profiles..."
+      ;;
+    "debug")
+      filtered_profiles=$(echo "$profiles" | grep -i "debug")
+      echo "Showing Debug profiles..."
+      ;;
+    "release")
+      filtered_profiles=$(echo "$profiles" | grep -i "release")
+      echo "Showing Release profiles..."
+      ;;
+    "")
+      filtered_profiles="$profiles"
+      echo "Showing all project profiles..."
+      ;;
+    *)
+      # If not a recognized filter, treat as action for later
+      filtered_profiles="$profiles"
+      echo "Showing all project profiles..."
+      ;;
+  esac
+
+  if [[ -z "$filtered_profiles" ]]; then
+    echo "No profiles found matching filter: $filter"
+    return 1
+  fi
+
+  # Add platform labels for better readability
+  local labeled_profiles
+  labeled_profiles=$(echo "$filtered_profiles" | while read -r profile; do
+    if [[ -n "$profile" ]]; then
+      case "$profile" in
+        *win*)
+          echo "🪟 Windows | $profile"
+          ;;
+        *macos*)
+          echo "🍎 macOS   | $profile"
+          ;;
+        *rhel*|*linux*)
+          echo "🐧 Linux   | $profile"
+          ;;
+        *android*)
+          echo "🤖 Android | $profile"
+          ;;
+        *ios*)
+          echo "📱 iOS     | $profile"
+          ;;
+        *)
+          echo "❓ Other   | $profile"
+          ;;
+      esac
+    fi
+  done)
+
+  # Use fzf to select a profile - show the full line but extract profile name
+  local selected_line
+  selected_line=$(echo "$labeled_profiles" | fzf --prompt="Select a Conan Profile: " --height=50%)
+
+  if [[ -z "$selected_line" ]]; then
+    echo "No profile selected, aborting."
+    return 1
+  fi
+
+  # Extract just the profile name (everything after the last pipe and space)
+  local selected_profile
+  selected_profile=$(echo "$selected_line" | sed 's/.*| *//')
+
+  # Determine action - check if first arg was a filter or action
+  local action
+  case "$filter" in
+    "windows"|"win"|"macos"|"mac"|"darwin"|"linux"|"android"|"ios"|"debug"|"release"|"")
+      # First arg was a filter, check for second arg as action
+      action="$2"
+      ;;
+    *)
+      # First arg was likely an action
+      action="$filter"
+      ;;
+  esac
+
+  # Create build directory if it doesn't exist
+  if [[ ! -d "build" ]]; then
+    echo "Creating build directory..."
+    mkdir -p build
+  fi
+
+  # Run the conan install command
+  echo "Executing: conan install . -pr $selected_profile -u"
+  conan install . -pr "$selected_profile" -r devhub
+}
+
+# Create aliases for different conan install modes
+alias ci='conan_fzf'                           # All profiles
+
+# Platform-specific aliases
+alias ciw='conan_fzf "windows"'                # Windows profiles only
+alias cim='conan_fzf "macos"'                  # macOS profiles only
+alias cil='conan_fzf "linux"'                  # Linux profiles only
+alias cia='conan_fzf "android"'                # Android profiles only
+alias cii='conan_fzf "ios"'                    # iOS profiles only
+
+# Build type aliases
+alias cid='conan_fzf "debug"'                  # Debug profiles only
+alias cir='conan_fzf "release"'                # Release profiles only
